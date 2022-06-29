@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
@@ -44,10 +45,15 @@ class MainViewModel : ViewModel() {
 
     private fun collectFinalSumFlow() {
         viewModelScope.launch {
-            sumFlow?.collect {
-                val oldSums = state.value.sums
-                val newSum = oldSums.sum() + it
-                updateState(sums = oldSums + newSum)
+            sumFlow?.collect { newValue ->
+                val stateSumList = state.value.sums
+                val oldSum = if (stateSumList.isEmpty()) {
+                    0
+                } else {
+                    stateSumList[newValue - 2]
+                }
+                val newSum = oldSum + newValue
+                updateState(sums = stateSumList + newSum)
             }
         }
     }
