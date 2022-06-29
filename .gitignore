@@ -17,3 +17,5 @@ local.properties
 /.idea/compiler.xml
 /.idea/.name
 /.idea/gradle.xml
+/.idea/deploymentTargetDropDown.xml
+/.idea/vcs.xml
