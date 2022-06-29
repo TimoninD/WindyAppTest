@@ -19,7 +19,7 @@ class MainViewModel : ViewModel() {
     private val interactor = MainInteractor()
 
     private var sumFlow: MutableSharedFlow<Int>? = null
-    private var sumJob: Job? = null
+    private var sumJobs: MutableList<Job> = mutableListOf()
 
     private val _state = MutableStateFlow(MainState())
     val state = _state.asStateFlow()
@@ -59,14 +59,18 @@ class MainViewModel : ViewModel() {
     }
 
     private fun collectSumFlows(flows: List<Flow<Int>>) {
-        sumJob?.cancel()
-        sumJob = viewModelScope.launch(Dispatchers.IO) {
-            flows.forEach {
-                it.collect {
-                    sumFlow?.emit(it)
+        sumJobs.cancel()
+        sumJobs = mutableListOf()
+        flows.forEach {
+            sumJobs.add(
+                viewModelScope.launch(Dispatchers.IO) {
+                    it.collect {
+                        sumFlow?.emit(it)
+                    }
                 }
-            }
+            )
         }
+
     }
 
     private fun updateState(
@@ -75,6 +79,12 @@ class MainViewModel : ViewModel() {
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             _state.emit(MainState(textValue = text, sums = sums))
+        }
+    }
+
+    private fun List<Job>.cancel() {
+        forEach {
+            it.cancel()
         }
     }
 }
